@@ -1,0 +1,12 @@
+[package]
+name = "erc1155_component"
+version = "0.1.0"
+edition = "2023_10"
+
+[dependencies]
+starknet = "2.4.4"
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.8.0" }
+
+[lib]
+sierra = true
+casm = false
