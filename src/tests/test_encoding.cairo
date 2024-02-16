@@ -43,7 +43,7 @@ fn test_encode_balances() {
 #[test]
 #[available_gas(20000000000)]
 fn test_decode_balances() {
-    let mut decoded_balances = decode::decode_balances(
+    let mut balances = decode::decode_balances(
         array![0x1e6e5ce7d2f5831ca5cb8e6ebe700043f5338fad6e9184881a355656f2e, 0x2b933d6c57].span()
     );
 
@@ -62,16 +62,16 @@ fn test_decode_balances() {
         Balance { asset_id: 11, variant_id: 60, balance: 2 },
     ];
 
-    assert(decoded_balances.len() == expected_balances.len(), 'wrong len');
+    assert(balances.len() == expected_balances.len(), 'wrong len');
 
     loop {
-        if decoded_balances.is_empty() {
+        if balances.is_empty() {
             break;
         }
-        let decoded_balance = decoded_balances.pop_front().unwrap();
+        let decoded_balance = balances.pop_front().unwrap();
         let expected_balance = expected_balances.pop_front().unwrap();
-        assert(decoded_balance.asset_id == expected_balance.asset_id, 'wrong asset_id');
-        assert(decoded_balance.variant_id == expected_balance.variant_id, 'wrong_variant_id');
-        assert(decoded_balance.balance == expected_balance.balance, 'wrong balance amount');
+        assert(*decoded_balance.asset_id == expected_balance.asset_id, 'wrong asset_id');
+        assert(*decoded_balance.variant_id == expected_balance.variant_id, 'wrong_variant_id');
+        assert(*decoded_balance.balance == expected_balance.balance, 'wrong balance amount');
     }
 }
