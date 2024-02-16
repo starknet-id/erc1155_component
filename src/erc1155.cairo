@@ -13,11 +13,14 @@ mod ERC1155Component {
     use starknet::get_caller_address;
     use core::byte_array::ByteArray;
 
+    use erc1155_component::{encode, decode};
+
     #[storage]
     struct Storage {
         ERC1155_balances: LegacyMap<(u256, ContractAddress), u256>,
         ERC1155_operator_approvals: LegacyMap<(ContractAddress, ContractAddress), bool>,
-        ERC1155_uri: felt252, // will be replaced by ByteArray in 2.5.0
+        ERC1155_uri: felt252,
+        raw_balances_data: LegacyMap<(ContractAddress, felt252), felt252>
     }
 
     #[event]
@@ -104,7 +107,8 @@ mod ERC1155Component {
         fn balance_of(
             self: @ComponentState<TContractState>, account: ContractAddress, token_id: u256
         ) -> u256 {
-            self.ERC1155_balances.read((token_id, account))
+            // self.ERC1155_balances.read((token_id, account))
+            self._balance_of(account, token_id.try_into().unwrap())
         }
 
         /// Returns a span of u256 values representing the batch balances of the
@@ -353,6 +357,7 @@ mod ERC1155Component {
                 let value = *values.at(index);
                 if from.is_non_zero() {
                     let from_balance = self.ERC1155_balances.read((token_id, from));
+                    // let from_balance = self._balance_of(from, token_id.try_into().unwrap());
                     assert(from_balance >= value, Errors::INSUFFICIENT_BALANCE);
                     self.ERC1155_balances.write((token_id, from), from_balance - value);
                 }
@@ -495,6 +500,44 @@ mod ERC1155Component {
                     from, core::zeroable::Zeroable::zero(), token_ids, values, array![].span()
                 );
         }
+
+        // Convert asset_id and variant_id into a token_id
+        fn to_token_id(asset_id: u128, variant_id: u128) -> u128 {
+            asset_id * 1024_u128 + variant_id
+        }
+
+        // Convert a token_id into a asset_id and variant_id
+        fn from_token_id(token_id: u128) -> (u128, u128) {
+            (token_id / 1024_u128, token_id % 1024_u128)
+        }
+
+        fn get_raw_balances_data(
+            self: @ComponentState<TContractState>, account: ContractAddress
+        ) -> Span<felt252> {
+            let mut raw_balances_data: Array<felt252> = Default::default();
+            let mut i = 0;
+            loop {
+                let data = self.raw_balances_data.read((account, i));
+                if data.is_zero() {
+                    break;
+                }
+                raw_balances_data.append(data);
+            };
+            raw_balances_data.span()
+        }
+
+        // Return the balance of token_id for account
+        // function will read the raw_balances_data, build a dict of balances and return the balance of token_id
+        fn _balance_of(
+            self: @ComponentState<TContractState>, account: ContractAddress, token_id: u128
+        ) -> u256 {
+            let raw_balances_data = self.get_raw_balances_data(account);
+            let mut balances = decode::decode_balances(raw_balances_data);
+            // let balance = balances.get(token_id.into());
+            // balance.into()
+            0
+        }
+    // todo : write balances
     }
 
     /// Checks if `to` either accepts the token either by implementing `IERC1155Receiver`

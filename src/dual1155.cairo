@@ -57,7 +57,8 @@ impl DualCaseERC1155Impl of DualCaseERC1155Trait {
         let mut args = array![];
         args.append_serde(token_uri);
 
-        call_contract_syscall(*self.contract_address, selector!("uri"), args.span()).unwrap_and_cast()
+        call_contract_syscall(*self.contract_address, selector!("uri"), args.span())
+            .unwrap_and_cast()
     }
 
     fn balance_of(self: @DualCaseERC1155, account: ContractAddress, token_id: u256) -> u256 {
@@ -71,7 +72,7 @@ impl DualCaseERC1155Impl of DualCaseERC1155Trait {
             .unwrap_and_cast()
     }
 
-     fn balance_of_batch(
+    fn balance_of_batch(
         self: @DualCaseERC1155, accounts: Span<ContractAddress>, token_ids: Span<u256>
     ) -> Span<u256> {
         let mut args = array![];
@@ -119,7 +120,7 @@ impl DualCaseERC1155Impl of DualCaseERC1155Trait {
         values: Span<u256>,
         data: Span<felt252>
     ) {
-         let mut args = array![];
+        let mut args = array![];
         args.append_serde(from);
         args.append_serde(to);
         args.append_serde(token_ids);
@@ -134,7 +135,7 @@ impl DualCaseERC1155Impl of DualCaseERC1155Trait {
         )
             .unwrap_syscall();
     }
-     fn is_approved_for_all(
+    fn is_approved_for_all(
         self: @DualCaseERC1155, owner: ContractAddress, operator: ContractAddress
     ) -> bool {
         let mut args = array![];
@@ -163,4 +164,4 @@ impl DualCaseERC1155Impl of DualCaseERC1155Trait {
             .unwrap_syscall();
     }
 }
-        
+
